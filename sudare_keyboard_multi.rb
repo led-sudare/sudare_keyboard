@@ -1,6 +1,8 @@
 require "rtmidi"
 require "thread"
 require 'fiddle/import'
+require "socket"
+require "json"
 
 ##############################################################################
 # Fiddleでリンクライブラリ読み込み
@@ -35,7 +37,7 @@ class MidiReciever
     def recieve
         @push_thread = Thread.start do
             @midiin.receive_channel_message do |byte1, byte2, byte3|
-                puts "#{byte1} #{byte2} #{byte3}"
+                #puts "#{byte1} #{byte2} #{byte3}"
                 @table.push(byte2)
             end
             puts "Receiving MIDI channel messages..."
@@ -89,15 +91,104 @@ end
 class LedSender
     def initialize(table)
         @table = table
+        @udp = UDPSocket.open()
+        @sockaddr = Socket.pack_sockaddr_in(10000, "127.0.0.1")
     end
 
     def send
         @take_thread = Thread.start do
             loop do
                 num = @table.take()
-                puts num
+                js = convert2json(num)
+                puts js
+                @udp.send(js, 0, @sockaddr)
                 sleep 0.5
             end
+        end
+    end
+
+    private
+    def convert2color(num)
+        case num
+        #####白鍵####
+        when 48 then
+        when 50 then
+        when 52 then
+        when 53 then
+        when 55 then
+        when 57 then
+        when 59 then
+        when 60 then
+        when 62 then
+            return 0xff0000
+        when 64 then
+            return 0x0000ff
+        when 65 then
+        when 67 then
+        when 69 then
+        when 71 then
+        when 72 then
+        else
+            return 0xffffff
+        end
+    end
+    def convert2json(num)
+        h = Hash.new
+        case num
+        #####白鍵####
+        when 48 then
+            return JSON.generate({ "image" => "btc"})
+        when 50 then
+            return JSON.generate({ "image" => "chopper"})
+        when 52 then
+            return JSON.generate({ "image" => "doraemon"})
+        when 53 then
+            return JSON.generate({ "image" => "dorami"})
+        when 55 then
+            return JSON.generate({ "image" => "droid"})
+        when 57 then
+            return JSON.generate({ "image" => "elsa"})
+        when 59 then
+            return JSON.generate({ "image" => "krillin"})
+        when 60 then
+            return JSON.generate({ "image" => "makey"})
+        when 62 then
+            return JSON.generate({ "image" => "miku"})
+        when 64 then
+            return JSON.generate({ "image" => "minion"})
+        when 65 then
+            return JSON.generate({ "image" => "pikachu"})
+        when 67 then
+            return JSON.generate({ "image" => "popteamepic"})
+        when 69 then
+            return JSON.generate({ "image" => "r2d2"})
+        when 71 then
+            return JSON.generate({ "image" => "rocket"})
+        when 72 then
+            return JSON.generate({ "image" => "slime"})
+        ####黒鍵####
+        when 49 then
+            return JSON.generate({ "action" => "stop"})
+        when 51 then
+            return JSON.generate({ "action" => "stop"})
+        when 54 then
+            return JSON.generate({ "action" => "bottom_up"})
+        when 56 then
+            return JSON.generate({ "action" => "left_right"})
+        when 58 then
+            return JSON.generate({ "action" => "back_front"})
+        when 61 then
+            return JSON.generate({ "action" => "stop"})
+        when 63 then
+            return JSON.generate({ "action" => "stop"})
+        when 66 then
+            return JSON.generate({ "action" => "bottom_up"})
+        when 68 then
+            return JSON.generate({ "action" => "left_right"})
+        when 70 then
+            return JSON.generate({ "action" => "back_front"})
+        else
+            return JSON.generate({ "action" => "null"})
         end
     end
 end
